@@ -1,0 +1,47 @@
+# Use root/example as user/password credentials
+version: '3.1'
+
+services:
+  website:
+    image: cloud_tp_ls2
+    ports:
+      - 8086:80
+    depends_on:
+      - db
+      - mongodb
+    links:
+      - minio
+    environment:
+      MYSQL_HOST: db
+      MYSQL_ROOT_PASSWORD: 'root'
+
+  minio:
+    image: minio/minio:latest
+    volumes:
+      - dataminio:/export
+    ports:
+      - "9001:9000"
+    environment:
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+    command: server /export
+
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 'root'
+    volumes:
+      - ./database/:/docker-entrypoint-initdb.d
+
+  mongodb:
+    image: mongo:latest
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+
+volumes:
+  dataminio:
